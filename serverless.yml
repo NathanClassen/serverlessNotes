@@ -15,18 +15,54 @@ provider:
   runtime: nodejs12.x
   stage: prod
   region: us-east-1
-  # To load environment variables externally
-  # rename env.example to .env and uncomment
-  # the following line. Also, make sure to not
-  # commit your .env.
-  #
-  #environment:
-  #  SAMPLE_ENV_VAR: ${env:SAMPLE_ENV_VAR}
+
+  environment:
+    tableName: notes
+    
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Scan
+        - dynamodb:Query
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - dynamodb:DescribeTable
+      Resource: "arn:aws:dynamodb:us-east-1:*:*"
 
 functions:
-  hello:
-    handler: handler.hello
+  delete:
+    handler: delete.main
     events:
       - http:
-          path: hello
+          path: notes/{id}
+          method: delete
+
+  update:
+    handler: update.main
+    events:
+      - http:
+          path: notes/{id}
+          method: put
+
+  list:
+    handler: list.main
+    events:
+      - http:
+          path: notes
           method: get
+
+  get:
+    handler: get.main
+    events:
+      - http:
+          path: notes/{id}
+          method: get
+
+  create:
+    handler: create.main
+    events:
+      - http:
+          path: notes
+          method: post
